@@ -5,11 +5,16 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - yum install jq -y
   build:
     commands:
-      - cd API/cicdashboard
       - echo Build started on `date`
-      - echo Building the Docker image...          
+      - echo Building the Docker image...
+      - cd API/cicdashboard
+      - export DBUSER=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."username"`
+      - export DBPASS=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."password"`
+      - export DBHOST=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."host"`
+      - export DBPORT=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."port"`
       - docker build --no-cache -t cic-dashboard-api-prod .
       - docker tag cic-dashboard-api-prod:latest 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
       - docker images

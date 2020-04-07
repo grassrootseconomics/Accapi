@@ -1,5 +1,4 @@
 from cicdashboard.settings.common import *
-
 # import boto3
 # import json
 
