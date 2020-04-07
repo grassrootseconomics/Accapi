@@ -6,12 +6,12 @@ phases:
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
       - yum install jq -y
-      - cd API/cicdashboard
-      - chmod +x secret.sh
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
+      - cd API/cicdashboard
+      - chmod +x secret.sh
       - . secret.sh
       - echo $DBPASS
       - echo $DBUSER   
