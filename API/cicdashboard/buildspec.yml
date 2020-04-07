@@ -7,6 +7,7 @@ phases:
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   build:
     commands:
+      - cd API/cicdashboard
       - echo Build started on `date`
       - echo Building the Docker image...          
       - docker build --no-cache -t cic-dashboard-api-prod .
