@@ -46,11 +46,11 @@ class Query(graphene.ObjectType):
 	# resolving the query object
 	def resolve_summaryData(self, info, **kwargs):
 
-		# cache_key, response = get_cache_values(kwargs, {"Query":"summaryData"})
-		# response = cache.get(cache_key)
+		cache_key, response = get_cache_values(kwargs, {"Query":"summaryData"})
+		response = cache.get(cache_key)
 
-		# if response is not None:
-		# 	return(response)
+		if response is not None:
+			return(response)
 
 		# get variable passed through query from frontend
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
@@ -88,7 +88,7 @@ class Query(graphene.ObjectType):
 				start = registered_user_data_from_date,
 				end = registered_user_data_to_date
 				)]
-			# cache.set(cache_key,response, CACHE_TTL)
+			cache.set(cache_key,response, CACHE_TTL)
 			return(response)
 
 		if request == 'newregisteredusers':

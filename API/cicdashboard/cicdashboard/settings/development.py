@@ -1,8 +1,5 @@
 from cicdashboard.settings.common import *
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1$qpv*d%uoex8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t'
 #SECRET_KEY = os.environ['SECRET_KEY']
@@ -12,30 +9,27 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'Adminuser',
+        'PASSWORD': 'Accenture123',
+        'HOST': 'cic-dashboard-dev-db.chsn5n41tx4z.eu-central-1.rds.amazonaws.com',
+        'PORT': '',
+    }
+}
+
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'postgres',
-#         'USER': 'Adminuser',
-#         'PASSWORD': 'Accenture123',
-#         'HOST': 'cic-dashboard-dev-db.chsn5n41tx4z.eu-central-1.rds.amazonaws.com',
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('DB_USER'),
+#         'PASSWORD': os.environ.get('DB_PASS'),
+#         'HOST': os.environ.get('DB_HOST'),
 #         'PORT': '',
 #     }
 # }
-
-print("----ENVI", os.environ.get('ENVIRONMENT'))
-print("----port", os.environ.get('RDS_PORT'))
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('RDS_DB_NAME'),
-        'USER': os.environ.get('RDS_USERNAME'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD'),
-        'HOST': os.environ.get('RDS_HOST'),
-        'PORT': os.environ.get('RDS_PORT'),
-    }
-}
 
 # Cache time to live in seconds.
 CACHE_TTL = 30

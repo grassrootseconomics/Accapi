@@ -1,3 +1,4 @@
 # ignoring the virtual environement
-API/api-env/*
+API/api-venv/*
 API/cicdashboard/bastion.pem
+API/.env
