@@ -1,14 +1,5 @@
 from cicdashboard.settings.common import *
-
-import boto3
-import json
-
-secrets_client = boto3.client('secretsmanager',region_name='eu-central-1')
-secret_arn = 'arn:aws:secretsmanager:eu-central-1:847108109661:secret:/prod/dbcredentials-OEPfTY'
-auth_token = secrets_client.get_secret_value(SecretId=secret_arn).get('SecretString')
-d = json.loads(auth_token)
-print(d['password'])
-
+import os
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = False
@@ -40,10 +31,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'cic_dashboard',
-        'USER': d['username'],
-        'PASSWORD': d['password'],
-        'HOST': d['host'],
-        'PORT': d['port'],
+        'USER': os.environ['DBUSER'],
+        'PASSWORD': os.environ['DBPASS'],
+        'HOST': os.environ['DBHOST'],
+        'PORT': os.environ['PORT'],
     }
 }
 

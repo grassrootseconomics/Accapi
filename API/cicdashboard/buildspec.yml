@@ -11,5 +11,15 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - cd API/cicdashboard
+      - export DBUSER=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."username"`
       - export DBPASS=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."password"`
-      - echo $DBPASS   
+      - export DBHOST=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."host"`
+      - export DBPORT=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."port"`
+      - docker build --no-cache -t cic-dashboard-api-prod .
+      - docker tag cic-dashboard-api-prod:latest 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
+      - docker images
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
