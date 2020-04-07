@@ -21,11 +21,6 @@ RUN pip install -r requirements.txt
 
 COPY . /code/
 
-RUN chmod +x /code/.env
-RUN . /code/.env
-
-RUN echo $SECRET_KEY
-
 RUN python3 manage.py collectstatic
 
 EXPOSE 8080
