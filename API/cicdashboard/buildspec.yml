@@ -11,6 +11,5 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - cd API/cicdashboard
-      - DBPASS=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."password"`
-      - export DBPASS
+      - export DBPASS=`aws secretsmanager get-secret-value --secret-id /prod/dbcredentials | jq --raw-output .SecretString | jq -r ."password"`
       - echo $DBPASS   
