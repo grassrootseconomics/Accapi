@@ -20,6 +20,7 @@ phases:
         #      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
       - IDS=$(aws ecs list-tasks --cluster "cic-production-dashboard" --service "cic-production-dashboard" --desired-status RUNNING | egrep "task/" | sed -E "s/.*task\/(.*)\"/\1/" | sed -z 's/\n/ /g')
       - |
-        IFS=', ' read -r -a array <<< "$IDS"
+        IFS=',' read -r -a array <<< "$IDS"
+      - echo "${array[@]}"
       - |
         for element in "${array[@]}"; do echo $element ; aws ecs stop-task --cluster "cic-production-dashboard" --task ${element}; done
