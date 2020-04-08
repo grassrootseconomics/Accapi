@@ -18,4 +18,5 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
         #      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
-      - echo $(aws ecs list-tasks --cluster cic-production-dashboard --desired-status 'RUNNING' --output text --query 'taskARNS[*]')
+      - chmod +x ecs_stop_task.sh
+      - /bin/bash ecs_stop_task.sh
