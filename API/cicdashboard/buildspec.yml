@@ -22,4 +22,6 @@ phases:
       - |
         IFS=', ' read -r -a array <<< "$IDS"
       - |
-        for element in "${array[@]}"; do aws ecs stop-task --cluster "cic-production-dashboard" --task ${element} done
+        for element in "${array[@]}"; do 
+          aws ecs stop-task --cluster "cic-production-dashboard" --task ${element} 
+        done
