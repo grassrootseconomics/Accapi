@@ -3,10 +3,15 @@ ENV PYTHONUNBUFFERED 1
 ENV ENVIRONMENT PROD
 
 ENV SECRET_KEY 1$qpv*d%uox8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t
+
+ARG DB_USER
+ARG DB_HOST
+ARG DB_PASS
+
 ENV DB_NAME cic_dashboard
-ENV DB_USER dashboard
-ENV DB_HOST cic-dashboard-prod-db.chsn5n41tx4z.eu-central-1.rds.amazonaws.com
-ENV DB_PASS q!DtaGq8BPIhu
+ENV DB_USER=${DB_USER}
+ENV DB_HOST=${DB_HOST}
+ENV DB_PASS=${DB_PASS}
 
 RUN mkdir /code
 RUN mkdir /code/static
