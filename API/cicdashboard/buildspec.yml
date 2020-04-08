@@ -20,7 +20,8 @@ phases:
         #      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
       - |
         myClusterId="cic-production-dashboard"
-        for i in $( aws ecs list-tasks --cluster '$myClusterId --desired-status 'RUNNING' --output text --query 'taskARNS[*]' ) ; do 
+        echo $(aws ecs list-tasks --cluster '$myClusterId --desired-status 'RUNNING' --output text --query 'taskARNS[*]')
+        for i in $(aws ecs list-tasks --cluster '$myClusterId --desired-status 'RUNNING' --output text --query 'taskARNS[*]')
+        do 
           echo aws ecs stop-task --cluster $myClusterId --task $i --reason "Stopped by kill script"
-          # aws ecs stop-task --cluster $myClusterId --task $i --reason "Stopped by kill script"
         done
