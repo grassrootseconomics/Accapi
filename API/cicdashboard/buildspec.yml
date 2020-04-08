@@ -18,5 +18,5 @@ phases:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
         #      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
-      - ID=$(aws ecs list-tasks --cluster "cic-production-dashboard" --service "cic-production-dashboard" --desired-status RUNNING)
+      - ID=$(aws ecs list-tasks --cluster "cic-production-dashboard" --service "cic-production-dashboard" --desired-status RUNNING | egrep "task/" | sed -E "s/.*task\/(.*)\"/\1/" | sed -z 's/\n/ /g')
       - echo $ID
