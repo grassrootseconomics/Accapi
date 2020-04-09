@@ -88,8 +88,6 @@ class Query(graphene.ObjectType):
 				start = registered_user_data_from_date,
 				end = registered_user_data_to_date
 				)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'newregisteredusers':
 			data = cic_users.objects.all()
@@ -97,29 +95,19 @@ class Query(graphene.ObjectType):
 			total = data.filter(created__gte = start_period_first, created__lt = end_period_last).aggregate(value = value)['value']
 			start = data.filter(created__gte = start_period_first, created__lt = start_period_last).aggregate(value = value)['value']
 			end = data.filter(created__gte = end_period_first, created__lt = end_period_last).aggregate(value = value)['value']
-
 			response = [summary_tiles(total = total,start = start,end = end)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'traders':
 			value = Coalesce(Count("source", distinct=True),0)
 			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'tradevolumes':
 			value = Coalesce(Sum("weight"),0)
 			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
-
 		if request == 'transactioncount':
 			value = Coalesce(Count("id"),0)
 			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'frequenttraders':
 			# get number of months selected, used in frequent trader calculation
@@ -132,13 +120,10 @@ class Query(graphene.ObjectType):
 			FQT_first_month = FQT_months.filter(_month = start_period_first).count()
 			FQT_last_month = FQT_months.filter(_month = end_period_first).count()
 
-			response = [summary_tiles(
-				total = FQT_total_all,
-				start = FQT_first_month,
-				end = FQT_last_month
-				)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = [summary_tiles(total = FQT_total_all, start = FQT_first_month, end = FQT_last_month)]
+
+		cache.set(cache_key,response, CACHE_TTL)
+		return(response)
 
 	summaryDataSubtype = graphene.List(subtype_summary,
 		from_date = graphene.String(required=True), 
@@ -191,17 +176,16 @@ class Query(graphene.ObjectType):
 			trade_volume_data_last_month = summary_data.filter(transfer_subtype = request, timestamp__gte = end_period_first, timestamp__lte = end_period_last).aggregate(value = Coalesce(Sum("weight"),0))['value']
 			
 			tv = summary_tiles(total = trade_volume_data_total, start = trade_volume_data_first_month, end = trade_volume_data_last_month)
-
 			response = [subtype_summary(trade_volumes = tv, transaction_count = tc)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		else:
+
 			tv = summary_tiles(total = 0, start = 0,end = 0)
 			tc = summary_tiles(total = 0, start = 0, end = 0)
 			response = [subtype_summary(trade_volumes = tv, transaction_count = tc)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+		
+		cache.set(cache_key,response, CACHE_TTL)
+		return(response)
 
 
 	summaryDataBalance = graphene.List(time_summary,gender = graphene.List(graphene.String,required=True))
@@ -224,5 +208,4 @@ class Query(graphene.ObjectType):
 		response = [time_summary(value=balance)]
 
 		cache.set(cache_key,response, CACHE_TTL)
-
 		return(response)
