@@ -2,7 +2,7 @@ from cicdashboard.settings.common import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1$qpv*d%uoex8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t'
-#SECRET_KEY = os.environ['SECRET_KEY']
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

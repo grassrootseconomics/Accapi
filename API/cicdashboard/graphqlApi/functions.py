@@ -26,7 +26,7 @@ The variables below define some of the common filter values used.
 token_list = ['Sarafu']
 gender_list = ["Male", "Female", "Other", "Unknown"]
 transfer_subtypes = ['STANDARD', 'AGENT_OUT', 'DISBURSEMENT', 'RECLAMATION','UNKNOWN']
-spend_type_list = ['Education', 'Environment', 'Farming/Labour', 'Food/Water', 'Fuel/Energy', 'Health', 'Other', 'Savings Group', 'Shop', 'Transport', 'Unknown']
+spend_type_list = ['Education', 'Environment', 'Farming/Labour', 'Food/Water', 'Fuel/Energy', 'Health', 'Other', 'Savings Group', 'System', 'Shop', 'Transport', 'Unknown']
 
 def create_filter_items(gender, spend_type, token_name, tx_type):
 	gender_filter = gender_list if len(gender) == 0 else gender
