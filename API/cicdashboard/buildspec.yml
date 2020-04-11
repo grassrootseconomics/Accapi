@@ -11,13 +11,13 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...          
       - /bin/bash docker_build.sh  
-      - docker tag cic-dashboard-api-prod:latest 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
+      - docker tag cic-dashboard-api-prod:latest $docker_tag
       - docker images
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 847108109661.dkr.ecr.eu-central-1.amazonaws.com/cic-dashboard-api-prod:latest
+      - docker push $docker_tag
       - chmod +x ecs_stop_task.sh
       - /bin/bash ecs_stop_task.sh
       - echo Successfully Done
