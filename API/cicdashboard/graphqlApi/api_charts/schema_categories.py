@@ -1,8 +1,7 @@
 """ SCHEMA SCRIPT
-This script control how the API returns data after an API call.
-The various query sub-types are defined here e.g. Summary, monthlySummary.
-GenericScaler types have been used in order to return the data in a format that is usable for the front end
-REMINDER - remove all unused pivots, libraries and variables after development is complete.
+This script is responsible for handling charts based on a number of categories, i.e. trade volume by gender.
+it makes use of functions defined in the functions script (located in parent folder > graphqlAPI)
+where possible repetitive steps have been transformed into a function for simplicity.
 """
 
 from .types import *
@@ -10,12 +9,6 @@ from .. functions import *
 
 cic_users = models.CicUsers
 reporting_table = models.CicReportingTable
-
-""" QUERY CLASS 
-The Query class below holds the resolver functions.
-these functions perfrom the neccessary data manipulations
-and returns the data as defined by the respective classes above
-"""
 
 class Query(graphene.ObjectType):
 
@@ -31,22 +24,19 @@ class Query(graphene.ObjectType):
 
 	def resolve_categorySummary(self, info, **kwargs):
 
-		cache_key = kwargs
-		cache_key.update({"Query":"categorySummary"})
-		response = cache.get(cache_key)
+		if CACHE_ENABLED:
+			cache_key = kwargs
+			cache_key.update({"Query":"categorySummary"})
+			response = cache.get(cache_key)
 
-		if response is not None:
-			return(response)
+			if response is not None:
+				return(response)
 
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
+		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
 		
-		reporting_data = reporting_table.objects.all()
-		gender_filter = gender_list if len(gender) == 0 else gender
-		tx_type_filter = transfer_subtypes if len(tx_type) == 0 else tx_type
-		spend_filter = spend_type_list if len(spend_type) == 0 else spend_type
-		token_name_filter = token_list if len(token_name) == 0 else token_name
-
+		reporting_data = reporting_table.objects.all()		
 		summary_data = reporting_data\
 		.filter(
 			timestamp__gte = start_period_first,
@@ -61,14 +51,15 @@ class Query(graphene.ObjectType):
 		if request == 'tradevolumes-category-spendtype':
 			data =summary_data.annotate(label = F('t_business_type')).values("label").annotate(value=Sum("weight"))
 			response = [category_summary(label=i['label'], value =i['value']) for i in data]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'tradevolumes-category-gender':
 			data =summary_data.annotate(label = F('s_gender')).values("label").annotate(value=Sum("weight"))
 			response = [category_summary(label=i['label'], value =i['value']) for i in data]
+
+		if CACHE_ENABLED:
 			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+
+		return(response)
 
 	summaryDataTopTraders = graphene.List(time_summary,
 		from_date = graphene.String(required=True), 
@@ -78,21 +69,20 @@ class Query(graphene.ObjectType):
 		gender = graphene.List(graphene.String,required=True))
 
 	def resolve_summaryDataTopTraders(self, info, **kwargs):
-		cache_key = kwargs
-		cache_key.update({"Query":"summaryDataTopTraders"})
-		response = cache.get(cache_key)
 
-		if response is not None:
-			return(response)
+		if CACHE_ENABLED:
+			cache_key = kwargs
+			cache_key.update({"Query":"summaryDataTopTraders"})
+			response = cache.get(cache_key)
+
+			if response is not None:
+				return(response)
 
 		from_date, to_date, token_name, business_type, gender = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['business_type'], kwargs['gender']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
+		gender_filter, business_filter, token_name_filter, _ = create_filter_items(gender, business_type, token_name, [])
 
 		reporting_data = reporting_table.objects.all()
-		gender_filter = gender_list if len(gender) == 0 else gender
-		business_filter = spend_type_list if len(business_type) == 0 else business_type
-		token_name_filter = token_list if len(token_name) == 0 else token_name
-
 		summary_data = reporting_data.annotate(_month=TruncMonth('timestamp'))\
 		.filter(
 			timestamp__gte = start_period_first,
@@ -107,7 +97,8 @@ class Query(graphene.ObjectType):
 		.annotate(volume = Coalesce(Sum("weight"),0), count = Coalesce(Count("id"),0),).order_by('-volume')[:10]
 
 		response = [time_summary(value=top_ten_traders)]
-		cache.set(cache_key,response, CACHE_TTL)
 
+		if CACHE_ENABLED:
+			cache.set(cache_key,response, CACHE_TTL)
+		
 		return(response)
-
