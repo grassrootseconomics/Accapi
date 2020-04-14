@@ -16,7 +16,7 @@ DATABASES = {
         'USER': 'Adminuser',
         'PASSWORD': 'Accenture123',
         'HOST': 'cic-dashboard-dev-db.chsn5n41tx4z.eu-central-1.rds.amazonaws.com',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
