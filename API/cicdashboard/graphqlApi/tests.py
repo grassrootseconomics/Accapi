@@ -1,13 +1,10 @@
 import json
+from .api import schema
 from django.test import TestCase
 from graphene.test import Client
+from .models import CicReportingTable, CicUsers
 from graphene_django.utils.testing import GraphQLTestCase
 
-from .api import schema
-from .models import CicReportingTable, CicUsers
-
-## get more test data in
-## and complete the rest of the test cases
 filters_query = """
     query {
         filters {
@@ -24,8 +21,8 @@ summaryData = """
 query summmaryData($fromDate:String!, $toDate:String!, $tokenName:[String]!,$spendType:[String]!, $gender:[String]!, $txType:[String]!, $request:String!) {
 	summaryData (fromDate:$fromDate, toDate:$toDate, tokenName:$tokenName,spendType:$spendType, gender:$gender, txType:$txType, request:$request) {
 		total
-	    startMonth
-	    endMonth
+	    start
+	    end
 	}
 }
 """
@@ -53,14 +50,14 @@ query summaryDataSubtype($fromDate:String!, $toDate:String!, $tokenName:[String]
     tradeVolumes
     {
       total
-      startMonth
-      endMonth
+      start
+      end
     }
     transactionCount
     {
       total
-      startMonth
-      endMonth
+      start
+      end
     }
   }
 }
@@ -75,8 +72,8 @@ query summaryDataBalance($gender:[String]!) {
 """
 
 topTraders = """
-query summaryDataTopTraders($fromDate:String!, $toDate:String!, $tokenName:[String]!,$spendType:[String]!, $gender:[String]!) {
-	summaryDataTopTraders (fromDate:$fromDate, toDate:$toDate, tokenName:$tokenName,spendType:$spendType, gender:$gender) {
+query summaryDataTopTraders($fromDate:String!, $toDate:String!, $tokenName:[String]!,$businessType:[String]!, $gender:[String]!) {
+	summaryDataTopTraders (fromDate:$fromDate, toDate:$toDate, tokenName:$tokenName,businessType:$businessType, gender:$gender) {
 		value
 	}
 }
@@ -84,25 +81,15 @@ query summaryDataTopTraders($fromDate:String!, $toDate:String!, $tokenName:[Stri
 
 summaryDataQueries = [
 	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"registeredusers"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"newregisteredusers"},
 	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"traders"},
 	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"frequenttraders"},
 	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes"},
 	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount"}
 ]
 
-monthlyDataQueries = [
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-spendtype"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-spendtype"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-gender"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-gender"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-txsubtype"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-txsubtype"},
-	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"users-time-totalvsfrequent"}
-]
-
-categoryDataQueries = [
- 	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-category-spendtype"},
-  	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-category-gender"}
+balanceDataQueries = [
+	{"gender":[]}
 ]
 
 subtypeDataQueries = [
@@ -113,13 +100,27 @@ subtypeDataQueries = [
   	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"unknown"}
 ]
 
-balanceDataQueries = [
-	{"gender":[]}
+monthlyDataQueries = [
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-spendtype"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-spendtype"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-gender"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-gender"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-time-txsubtype"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"transactioncount-time-txsubtype"},
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"registeredusers-cumulative"},	  
+	  {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"users-time-totalvsfrequent"}
 ]
 
-topTradersQueries = [
-	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[]}
+categoryDataQueries = [
+ 	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-category-spendtype"},
+  	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"tradevolumes-category-gender"}
 ]
+
+
+topTradersQueries = [
+	{"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"businessType":[], "gender":[]}
+]
+
 class TestAPISchema(GraphQLTestCase):
 	GRAPHQL_SCHEMA = schema
 
@@ -160,87 +161,46 @@ class TestAPISchema(GraphQLTestCase):
 			row_created_date = '2020-09-10 10:00:00'
 			)
 
-		# self.reportingtable = CicReportingTable
-		# self.user = 
-
-	# def test_filters_query(self):
-	# 	response = self.client.execute(filters_query)
-	# 	print(response)
-	# 	response_filters = response.get("data").get('filters')
-	# 	#expected =  [{'yearMonthList': [{'Item': '2020-09'}], 'tokenNameList': [{'Item': 'Sarafu'}], 'genderList': [{'Item': 'Male'}], 'txTypeList': [{'Item': 'STANDARD'}], 'spendTypeList': [{'Item': 'Education'}]}]
-	# 	#assert response_filters == expected
-	# 	self.assertResponseNoErrors(response)
-
 
 	def test_filters_query(self):
 		response = self.query(filters_query, op_name = 'filters')
-		print(response)
 		content = json.loads(response.content)
-		print(content)
-		self.assertResponseNoErrors(response)
+		# print(response)
+		# print(content)
+		self.assertResponseNoErrors(response)	
 
+	def test_summaryDataQueries(self):
+		for query in summaryDataQueries:
+			response = self.query(
+				summaryData, 
+				op_name = 'summmaryData',
+				variables = query)
+			content = json.loads(response.content)
+			# print(response)
+			# print(content)
+			self.assertResponseNoErrors(response)	
 
-	# def test_registered_users_query(self):
-	# 	response = self.query(
-	# 		summaryData, 
-	# 		op_name = 'summmaryData',
-	# 		variables = {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"registeredusers"})
-	# 	content = json.loads(response.content)
-	# 	# print(response)
-	# 	# print(content)
-	# 	self.assertResponseNoErrors(response)	
+	def test_monthlyDataQueries(self):
+		for query in monthlyDataQueries:
+			response = self.query(
+				monthlyData, 
+				op_name = 'monthlySummaryData',
+				variables = query)
+			content = json.loads(response.content)
+			# print(response)
+			# print(content)
+			self.assertResponseNoErrors(response)	
 
-
-	# def test_traders_query(self):
-	# 	response = self.query(
-	# 		summaryData, 
-	# 		op_name = 'summmaryData',
-	# 		variables = {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"traders"})
-	# 	content = json.loads(response.content)
-	# 	self.assertResponseNoErrors(response)
-
-
-	# def test_frequent_traders_query(self):
-	# 	response = self.query(
-	# 		summaryData, 
-	# 		op_name = 'summmaryData',
-	# 		variables = {"fromDate":"2018-09", "toDate":"2020-03", "tokenName":[],"spendType":[], "gender":[], "txType":[], "request":"frequenttraders"})
-	# 	content = json.loads(response.content)
-	# 	self.assertResponseNoErrors(response)		
-
-	# def test_summaryDataQueries(self):
-	# 	for query in summaryDataQueries:
-	# 		response = self.query(
-	# 			summaryData, 
-	# 			op_name = 'summmaryData',
-	# 			variables = query)
-	# 		content = json.loads(response.content)
-	# 		print(response)
-	# 		print(content)
-	# 		self.assertResponseNoErrors(response)	
-
-	# def test_monthlyDataQueries(self):
-	# 	for query in monthlyDataQueries:
-	# 		response = self.query(
-	# 			monthlyData, 
-	# 			op_name = 'monthlySummaryData',
-	# 			variables = query)
-	# 		content = json.loads(response.content)
-	# 		print(response)
-	# 		print(content)
-	# 		self.assertResponseNoErrors(response)	
-
-	# def test_categoryDataQueries(self):
-	# 	for query in categoryDataQueries:
-	# 		response = self.query(
-	# 			categoryData, 
-	# 			op_name = 'categorySummary',
-	# 			variables = query)
-	# 		content = json.loads(response.content)
-	# 		print(response)
-	# 		print(content)
-	# 		self.assertResponseNoErrors(response)
-
+	def test_categoryDataQueries(self):
+		for query in categoryDataQueries:
+			response = self.query(
+				categoryData, 
+				op_name = 'categorySummary',
+				variables = query)
+			content = json.loads(response.content)
+			# print(response)
+			# print(content)
+			self.assertResponseNoErrors(response)
 	
 	def test_subtypeDataQueries(self):
 		for query in subtypeDataQueries:
@@ -249,6 +209,30 @@ class TestAPISchema(GraphQLTestCase):
 				op_name = 'summaryDataSubtype',
 				variables = query)
 			content = json.loads(response.content)
-			print(response)
-			print(content)
+			# print(response)
+			# print(content)
+			self.assertResponseNoErrors(response)	
+
+
+	def test_balanceDataQueries(self):
+		for query in balanceDataQueries:
+			response = self.query(
+				balanceData, 
+				op_name = 'summaryDataBalance',
+				variables = query)
+			content = json.loads(response.content)
+			# print(response)
+			# print(content)
+			self.assertResponseNoErrors(response)	
+
+
+	def test_topTradersQueries(self):
+		for query in topTradersQueries:
+			response = self.query(
+				topTraders, 
+				op_name = 'summaryDataTopTraders',
+				variables = query)
+			content = json.loads(response.content)
+			# print(response)
+			# print(content)
 			self.assertResponseNoErrors(response)	
