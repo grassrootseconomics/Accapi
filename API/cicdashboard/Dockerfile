@@ -20,6 +20,7 @@ RUN mkdir /code/static
 WORKDIR /code
 
 RUN pip install uwsgi
+RUN pip install web3
 
 COPY requirements.txt /code/
 RUN pip install -r requirements.txt
