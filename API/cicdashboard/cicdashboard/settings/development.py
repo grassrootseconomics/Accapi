@@ -15,7 +15,7 @@ ALLOWED_HOSTS = [
 'http://cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
 'cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
 'https://iqr3ivy96j.execute-api.eu-central-1.amazonaws.com/prod/graphql/',
-'http://testtg-929153678.eu-central-1.elb.amazonaws.com/graphql/'
+'testtg-929153678.eu-central-1.elb.amazonaws.com'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
