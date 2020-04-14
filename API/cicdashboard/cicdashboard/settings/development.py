@@ -6,18 +6,7 @@ SECRET_KEY = '1$qpv*d%uoex8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-# ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = [
-#'0.0.0.0', 
-#'localhost', 
-'https://dashboard.sarafu.network', 
-'dashboard.sarafu.network',
-'http://cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
-'cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
-'https://iqr3ivy96j.execute-api.eu-central-1.amazonaws.com/prod/graphql/',
-'testtg-929153678.eu-central-1.elb.amazonaws.com'
-]
-
+ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {

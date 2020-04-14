@@ -3,8 +3,8 @@ from cicdashboard.settings.common import *
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = False
-
-# SECURITY WARNING: update this when you have the production host
+ALLOWED_HOSTS =['*']
+CORS_ORIGIN_ALLOW_ALL = True
 
 # ALLOWED_HOSTS = [
 # #'0.0.0.0', 
@@ -13,11 +13,9 @@ DEBUG = False
 # 'dashboard.sarafu.network',
 # 'http://cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
 # 'cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
-# 'https://iqr3ivy96j.execute-api.eu-central-1.amazonaws.com/prod/graphql/'
+# 'iqr3ivy96j.execute-api.eu-central-1.amazonaws.com',
+# 'cic-production-alb-62265053.eu-central-1.elb.amazonaws.com'
 # ]
-
-ALLOWED_HOSTS =['*']
-CORS_ORIGIN_ALLOW_ALL = True
 
 # CORS_ORIGIN_WHITELIST = [
 # #'http://0.0.0.0:8080', 
