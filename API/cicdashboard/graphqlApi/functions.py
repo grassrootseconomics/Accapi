@@ -15,6 +15,7 @@ from graphene.types.generic import GenericScalar
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.db.models.functions import TruncMonth, Coalesce, TruncDay
 from django.db.models import Count, Sum, F, Case, When, Value, CharField
+# from .get_exchange_rate import cic_supply, converter_reserve_balance, cic_price 
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 CACHE_ENABLED = settings.CACHE_ENABLED
