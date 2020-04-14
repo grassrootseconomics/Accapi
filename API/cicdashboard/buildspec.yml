@@ -20,4 +20,4 @@ phases:
       - docker push $docker_tag
       - chmod +x ecs_stop_task.sh
       - /bin/bash ecs_stop_task.sh
-      - echo Successfully Done
+      - echo Successfully
