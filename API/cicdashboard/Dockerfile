@@ -4,6 +4,7 @@ ENV ENVIRONMENT $env
 
 ENV SECRET_KEY 1$qpv*d%uox8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t
 
+ARG DB_NAME
 ARG DB_USER
 ARG DB_HOST
 ARG DB_PASS
