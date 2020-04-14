@@ -2,4 +2,11 @@
 API/api-venv/*
 API/ETL/*
 API/cicdashboard/bastion.pem
-API/.env
+API/ETL
+
+API/cicdashboard/__pycache__
+API/cicdashboard/settings/__pycache__
+API/graphqlApi/__pycache__
+API/graphqlApi/api_charts/__pycache__
+API/graphqlApi/api_filters/__pycache__
+API/graphqlApi/migrations/__pycache__
