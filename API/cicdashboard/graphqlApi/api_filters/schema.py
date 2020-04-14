@@ -1,8 +1,7 @@
 """ SCHEMA SCRIPT
-This script control how the API returns data after an API call.
-The various query sub-types are defined here e.g. Summary, monthlySummary.
-GenericScaler types have been used in order to return the data in a format that is usable for the front end
-REMINDER - remove all unused pivots, libraries and variables after development is complete.
+This script is responsible for providing the range of available filter values to the dashboard application.
+it makes use of functions defined in the functions script (located in parent folder > graphqlAPI)
+where possible repetitive steps have been transformed into a function for simplicity.
 """
 
 from .. functions import *
@@ -13,12 +12,16 @@ class Query(graphene.ObjectType):
 
 	filters = graphene.List(filters)
 
-
 	def resolve_filters(self, info, **kwargs):
-		cache_key, cache_data = get_cache_values(kwargs, "filters")
-		if cache_data is not None:
-			return cache_data
+
+		if CACHE_ENABLED:
+			cache_key, cache_data = get_cache_values(kwargs, "filters")
+			if cache_data is not None:
+				return cache_data
 
 		data = resolve_filters(kwargs)
-		cache.set(cache_key,data, CACHE_TTL)
+
+		if CACHE_ENABLED:
+			cache.set(cache_key,data, CACHE_TTL)
+
 		return data

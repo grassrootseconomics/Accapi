@@ -1,8 +1,7 @@
 """ SCHEMA SCRIPT
-This script control how the API returns data after an API call.
-The various query sub-types are defined here e.g. Summary, monthlySummary.
-GenericScaler types have been used in order to return the data in a format that is usable for the front end
-REMINDER - remove all unused pivots, libraries and variables after development is complete.
+This script is responsible for handling summary tiles and balance queries.
+it makes use of functions defined in the functions script (located in parent folder > graphqlAPI)
+where possible repetitive steps have been transformed into a function for simplicity.
 """
 
 from .types import *
@@ -11,25 +10,6 @@ from .. functions import *
 FQ_TRADER_THRESHOLD = 4
 cic_users = models.CicUsers
 reporting_table = models.CicReportingTable
-
-""" SUMMARY SPECIFIC FUNCTIONS
-Functions that are specific to just the tile summaries
-"""
-
-def get_common_summary_response_data(data, value, start_period_first, start_period_last, end_period_first, end_period_last):
-	total = data.aggregate(value = value)['value']
-	start = data.filter(timestamp__gte = start_period_first, timestamp__lt = start_period_last).aggregate(value = value)['value']
-	end = data.filter(timestamp__gte = end_period_first, timestamp__lt = end_period_last).aggregate(value = value)['value']
-
-	response = [summary_tiles(total = total, start = start, end = end)]
-
-	return(response)
-
-""" QUERY CLASS 
-The Query class below holds the resolver functions.
-these functions perfrom the neccessary data manipulations
-and returns the data as defined by the respective classes above
-"""
 
 class Query(graphene.ObjectType):
 
@@ -46,13 +26,14 @@ class Query(graphene.ObjectType):
 	# resolving the query object
 	def resolve_summaryData(self, info, **kwargs):
 
-		cache_key, response = get_cache_values(kwargs, {"Query":"summaryData"})
-		response = cache.get(cache_key)
+		if CACHE_ENABLED:
+			cache_key, response = get_cache_values(kwargs, {"Query":"summaryData"})
+			response = cache.get(cache_key)
 
-		if response is not None:
-			return(response)
+			if response is not None:
+				return(response)
 
-		# get variable passed through query from frontend
+		# get variable passed through query from front-end
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
 		
@@ -88,8 +69,6 @@ class Query(graphene.ObjectType):
 				start = registered_user_data_from_date,
 				end = registered_user_data_to_date
 				)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'newregisteredusers':
 			data = cic_users.objects.all()
@@ -97,29 +76,19 @@ class Query(graphene.ObjectType):
 			total = data.filter(created__gte = start_period_first, created__lt = end_period_last).aggregate(value = value)['value']
 			start = data.filter(created__gte = start_period_first, created__lt = start_period_last).aggregate(value = value)['value']
 			end = data.filter(created__gte = end_period_first, created__lt = end_period_last).aggregate(value = value)['value']
-
 			response = [summary_tiles(total = total,start = start,end = end)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		if request == 'traders':
 			value = Coalesce(Count("source", distinct=True),0)
-			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'tradevolumes':
 			value = Coalesce(Sum("weight"),0)
-			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
-
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'transactioncount':
 			value = Coalesce(Count("id"),0)
-			response = get_common_summary_response_data(summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'frequenttraders':
 			# get number of months selected, used in frequent trader calculation
@@ -132,13 +101,12 @@ class Query(graphene.ObjectType):
 			FQT_first_month = FQT_months.filter(_month = start_period_first).count()
 			FQT_last_month = FQT_months.filter(_month = end_period_first).count()
 
-			response = [summary_tiles(
-				total = FQT_total_all,
-				start = FQT_first_month,
-				end = FQT_last_month
-				)]
+			response = [summary_tiles(total = FQT_total_all, start = FQT_first_month, end = FQT_last_month)]
+
+		if CACHE_ENABLED:
 			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+		
+		return(response)
 
 	summaryDataSubtype = graphene.List(subtype_summary,
 		from_date = graphene.String(required=True), 
@@ -150,12 +118,14 @@ class Query(graphene.ObjectType):
 		request = graphene.String(required=True))
 
 	def resolve_summaryDataSubtype(self, info, **kwargs):
-		cache_key = kwargs
-		cache_key.update({"Query":"summaryDataSubtype"})
-		response = cache.get(cache_key)
 
-		if response is not None:
-			return(response)
+		if CACHE_ENABLED:
+			cache_key = kwargs
+			cache_key.update({"Query":"summaryDataSubtype"})
+			response = cache.get(cache_key)
+
+			if response is not None:
+				return(response)
 
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
@@ -191,28 +161,31 @@ class Query(graphene.ObjectType):
 			trade_volume_data_last_month = summary_data.filter(transfer_subtype = request, timestamp__gte = end_period_first, timestamp__lte = end_period_last).aggregate(value = Coalesce(Sum("weight"),0))['value']
 			
 			tv = summary_tiles(total = trade_volume_data_total, start = trade_volume_data_first_month, end = trade_volume_data_last_month)
-
 			response = [subtype_summary(trade_volumes = tv, transaction_count = tc)]
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
 
 		else:
+
 			tv = summary_tiles(total = 0, start = 0,end = 0)
 			tc = summary_tiles(total = 0, start = 0, end = 0)
 			response = [subtype_summary(trade_volumes = tv, transaction_count = tc)]
+
+		if CACHE_ENABLED:
 			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+		
+		return(response)
 
 
 	summaryDataBalance = graphene.List(time_summary,gender = graphene.List(graphene.String,required=True))
 
 	def resolve_summaryDataBalance(self, info, **kwargs):
-		cache_key = kwargs
-		cache_key.update({"Query":"summaryDataBalance"})
-		response = cache.get(cache_key)
+		if CACHE_ENABLED:
 
-		if response is not None:
-			return(response)
+			cache_key = kwargs
+			cache_key.update({"Query":"summaryDataBalance"})
+			response = cache.get(cache_key)
+
+			if response is not None:
+				return(response)
 
 		gender = kwargs['gender']
 		gender_filter = gender_list if len(gender) == 0 else gender
@@ -223,6 +196,7 @@ class Query(graphene.ObjectType):
 		balance = [{"total":total_balance, "circulation":circulation}]
 		response = [time_summary(value=balance)]
 
-		cache.set(cache_key,response, CACHE_TTL)
-
+		if CACHE_ENABLED:
+			cache.set(cache_key,response, CACHE_TTL)
+		
 		return(response)

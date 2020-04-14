@@ -1,8 +1,7 @@
 """ SCHEMA SCRIPT
-This script control how the API returns data after an API call.
-The various query sub-types are defined here e.g. Summary, monthlySummary.
-GenericScaler types have been used in order to return the data in a format that is usable for the front end
-REMINDER - remove all unused pivots, libraries and variables after development is complete.
+This script is responsible for handling time based chart requests.
+it makes use of functions defined in the functions script (located in parent folder > graphqlAPI)
+where possible repetitive steps have been transformed into a function for simplicity.
 """
 
 from .types import *
@@ -11,58 +10,6 @@ from .. functions import *
 FQ_TRADER_THRESHOLD = 4
 cic_users = models.CicUsers
 reporting_table = models.CicReportingTable
-
-
-""" MONTHLY SUMMARY SPECIFIC FUNCTIONS
-Functions that are specific to just the time based summaries
-"""
-
-# This functions takes the inital response of a query and fills in the gaps, where dates have not been provided by database
-def fill_missing_categories(initial_response, duration_name,start_period_first,end_period_last, filter_type):
-
-	delta = end_period_last - start_period_first
-	duration_list = []
-	if duration_name == 'dayMonth':
-		for i in range(delta.days):
-			days = start_period_first + timedelta(days=i)
-			days = days.date().strftime("%Y-%m-%d")
-			duration_list.append(days)
-	else:
-		for i in range(delta.days):
-			days = start_period_first + timedelta(days=i)
-			days = days.date().strftime("%Y-%m")
-			if days not in duration_list:
-				duration_list.append(days)
-
-	final_result = []
-	for items in duration_list:
-		result = [item for item in initial_response if item[duration_name] == items]
-
-		if len(result) == 0:
-			empty_response_dict = {duration_name:items}
-			populate_empty_response_dict = [empty_response_dict.update({i:0}) for i in filter_type]
-			final_result.append(empty_response_dict)
-		else:
-			final_result_update = [final_result.append(i) for i in result]
-
-	return (final_result)
-
-# this function is the general steps most of the functions in the query class below performs
-def get_common_response_data (data, duration_type, category, aggregation_type, date_format, duration_name, filter_type, start_period_first, end_period_last):
-	duration_items = []
-	data  = data.values(duration_type, category).annotate(value = aggregation_type).order_by(duration_type, category)
-	populate_items = [duration_items.append(i[duration_type].strftime(date_format)) for i in data if i[duration_type].strftime(date_format) not in duration_items]
-	response = category_by_filter(data, duration_items,duration_name,duration_type, date_format, category, filter_type)
-	response = fill_missing_categories(response, duration_name, start_period_first, end_period_last, filter_type)
-	
-	response = [time_summary(value=response)]
-	return(response)
-
-""" QUERY CLASS 
-The Query class below holds the resolver functions.
-these functions perfrom the neccessary data manipulations
-and returns the data as defined by the respective classes above
-"""
 
 class Query(graphene.ObjectType):
 	
@@ -76,17 +23,19 @@ class Query(graphene.ObjectType):
 		request = graphene.String(required=True))
 
 	def resolve_monthlySummaryData(self, info, **kwargs):
-		cache_key = kwargs
-		cache_key.update({"Query":"monthlySummaryData"})
-		response = cache.get(cache_key)
+		
+		if CACHE_ENABLED:
+			cache_key = kwargs
+			cache_key.update({"Query":"monthlySummaryData"})
+			response = cache.get(cache_key)
 
-		if response is not None:
-			return(response)
+			if response is not None:
+				return(response)
 
-		# get filter criteria passed from frontend / user request
+		# get filter criteria passed from front-end / user request
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 
-		# get revelant start and end points for date selection
+		# get relevant start and end points for date selection
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
 		# print(start_period_first, start_period_last, end_period_first, end_period_last)
 
@@ -116,36 +65,22 @@ class Query(graphene.ObjectType):
 
 
 		if request == 'tradevolumes-time-spendtype':
-			response = get_common_response_data(summary_data, duration_type, 't_business_type',Sum('weight'), duration_format, duration_name, spend_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_response_data(time_summary, summary_data, duration_type, 't_business_type',Sum('weight'), duration_format, duration_name, spend_filter, start_period_first, end_period_last)
 
 		if request == 'transactioncount-time-spendtype':
-			response = get_common_response_data(summary_data, duration_type, 't_business_type',Count("id"), duration_format, duration_name, spend_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_response_data(time_summary, summary_data, duration_type, 't_business_type',Count("id"), duration_format, duration_name, spend_filter, start_period_first, end_period_last)
 
 		if request == 'tradevolumes-time-gender':
-			response = get_common_response_data(summary_data, duration_type, 's_gender',Sum("weight"), duration_format, duration_name, gender_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
-
+			response = get_common_response_data(time_summary, summary_data, duration_type, 's_gender',Sum("weight"), duration_format, duration_name, gender_filter, start_period_first, end_period_last)
 
 		if request == 'transactioncount-time-gender':
-			response = get_common_response_data(summary_data, duration_type, 's_gender',Count("id"), duration_format, duration_name, gender_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_response_data(time_summary, summary_data, duration_type, 's_gender',Count("id"), duration_format, duration_name, gender_filter, start_period_first, end_period_last)
 
 		if request == 'tradevolumes-time-txsubtype':
-			response = get_common_response_data(summary_data, duration_type, 'transfer_subtype',Sum("weight"), duration_format, duration_name, tx_type_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
-
+			response = get_common_response_data(time_summary, summary_data, duration_type, 'transfer_subtype',Sum("weight"), duration_format, duration_name, tx_type_filter, start_period_first, end_period_last)
 
 		if request == 'transactioncount-time-txsubtype':
-			response = get_common_response_data(summary_data, duration_type, 'transfer_subtype',Count("id"), duration_format, duration_name, tx_type_filter, start_period_first, end_period_last)
-			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+			response = get_common_response_data(time_summary, summary_data, duration_type, 'transfer_subtype',Count("id"), duration_format, duration_name, tx_type_filter, start_period_first, end_period_last)
 
 		if request == 'users-time-totalvsfrequent' or request == 'registeredusers-cumulative':
 			response = []
@@ -225,5 +160,8 @@ class Query(graphene.ObjectType):
 					response.append(temp_dict)
 			
 			response = [time_summary(value=response)]
+
+		if CACHE_ENABLED:
 			cache.set(cache_key,response, CACHE_TTL)
-			return(response)
+		
+		return(response)

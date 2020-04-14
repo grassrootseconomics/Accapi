@@ -1,5 +1,5 @@
 """ HELPER FUNCTIONS
-This script contains helper functions for the main dashbaord solution.
+This script contains helper functions for the main dashboard solution.
 """
 
 # common imports
@@ -17,7 +17,7 @@ from django.db.models.functions import TruncMonth, Coalesce, TruncDay
 from django.db.models import Count, Sum, F, Case, When, Value, CharField
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
-
+CACHE_ENABLED = settings.CACHE_ENABLED
 
 """ FILTER VARIABLES
 The variables below define some of the common filter values used.
@@ -26,7 +26,7 @@ The variables below define some of the common filter values used.
 token_list = ['Sarafu']
 gender_list = ["Male", "Female", "Other", "Unknown"]
 transfer_subtypes = ['STANDARD', 'AGENT_OUT', 'DISBURSEMENT', 'RECLAMATION','UNKNOWN']
-spend_type_list = ['Education', 'Environment', 'Farming/Labour', 'Food/Water', 'Fuel/Energy', 'Health', 'Other', 'Savings Group', 'Shop', 'Transport', 'Unknown']
+spend_type_list = ['Education', 'Environment', 'Farming/Labour', 'Food/Water', 'Fuel/Energy', 'Health', 'Other', 'Savings Group', 'System', 'Shop', 'Transport', 'Unknown']
 
 def create_filter_items(gender, spend_type, token_name, tx_type):
 	gender_filter = gender_list if len(gender) == 0 else gender
@@ -78,8 +78,8 @@ def create_date_range(from_date, to_date):
 	return (start_period_first, start_period_last, end_period_first, end_period_last)
 
 """ CATEGORY BY FILTER
-Handles cases where categories are not retunred by the query, by adding in the categories and making thier value 0.
-This is crucial for the charts to work properly in the frontend.
+Handles cases where categories are not returned by the query, by adding in the categories and making their value 0.
+This is crucial for the charts to work properly in the front-end.
 """
 
 def category_by_filter(data, duration_list, time_name, time_type, time_format, category, filter_list):
@@ -98,3 +98,60 @@ def category_by_filter(data, duration_list, time_name, time_type, time_format, c
 		result.append(temp_dict)
 	
 	return(result)
+
+""" SUMMARY SPECIFIC FUNCTIONS (for api_charts/schema_tiles.py file)
+Functions that are specific to just the tile summaries
+"""
+
+def get_common_summary_response_data(object_type, data, value, start_period_first, start_period_last, end_period_first, end_period_last):
+	total = data.aggregate(value = value)['value']
+	start = data.filter(timestamp__gte = start_period_first, timestamp__lt = start_period_last).aggregate(value = value)['value']
+	end = data.filter(timestamp__gte = end_period_first, timestamp__lt = end_period_last).aggregate(value = value)['value']
+	response = [object_type(total = total, start = start, end = end)]
+	return(response)
+
+
+""" MONTHLY SUMMARY SPECIFIC FUNCTIONS (for api_charts/schema_time_charts.py file)
+Functions that are specific to just the time based summaries
+"""
+
+# This functions takes the initial response of a query and fills in the gaps, where dates have not been provided by database
+def fill_missing_categories(initial_response, duration_name,start_period_first,end_period_last, filter_type):
+
+	delta = end_period_last - start_period_first
+	duration_list = []
+	if duration_name == 'dayMonth':
+		for i in range(delta.days):
+			days = start_period_first + timedelta(days=i)
+			days = days.date().strftime("%Y-%m-%d")
+			duration_list.append(days)
+	else:
+		for i in range(delta.days):
+			days = start_period_first + timedelta(days=i)
+			days = days.date().strftime("%Y-%m")
+			if days not in duration_list:
+				duration_list.append(days)
+
+	final_result = []
+	for items in duration_list:
+		result = [item for item in initial_response if item[duration_name] == items]
+
+		if len(result) == 0:
+			empty_response_dict = {duration_name:items}
+			populate_empty_response_dict = [empty_response_dict.update({i:0}) for i in filter_type]
+			final_result.append(empty_response_dict)
+		else:
+			final_result_update = [final_result.append(i) for i in result]
+
+	return (final_result)
+
+# this function is the general steps most queries in schema_time_charts.py
+def get_common_response_data (object_type,data, duration_type, category, aggregation_type, date_format, duration_name, filter_type, start_period_first, end_period_last):
+	duration_items = []
+	data  = data.values(duration_type, category).annotate(value = aggregation_type).order_by(duration_type, category)
+	populate_items = [duration_items.append(i[duration_type].strftime(date_format)) for i in data if i[duration_type].strftime(date_format) not in duration_items]
+	response = category_by_filter(data, duration_items,duration_name,duration_type, date_format, category, filter_type)
+	response = fill_missing_categories(response, duration_name, start_period_first, end_period_last, filter_type)
+	
+	response = [object_type(value=response)]
+	return(response)

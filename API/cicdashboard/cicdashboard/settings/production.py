@@ -1,12 +1,4 @@
 from cicdashboard.settings.common import *
-# import boto3
-# import json
-
-# secrets_client = boto3.client('secretsmanager')
-# secret_arn = 'arn:aws:secretsmanager:eu-central-1:847108109661:secret:/prod/dbcredentials-OEPfTY'
-# auth_token = secrets_client.get_secret_value(SecretId=secret_arn).get('SecretString')
-# d = json.loads(auth_token)
-# print(d['password'])
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
@@ -35,18 +27,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 # 'https://iqr3ivy96j.execute-api.eu-central-1.amazonaws.com/prod/graphql/'
 # ]
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'cic_dashboard',
-#         'USER': d['username'],
-#         'PASSWORD': d['password'],
-#         'HOST': d['host'],
-#         'PORT': d['port'],
-#     }
-# }
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -60,6 +40,7 @@ DATABASES = {
 
 # Cache time to live in seconds.
 CACHE_TTL = 30
+CACHE_ENABLED = True
 
 CACHES = {
     "default": {

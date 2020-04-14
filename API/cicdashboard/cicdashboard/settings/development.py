@@ -20,31 +20,9 @@ DATABASES = {
     }
 }
 
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'Adminuser',
-        'PASSWORD': 'Accenture123',
-        'HOST': 'cic-dashboard-dev-db.chsn5n41tx4z.eu-central-1.rds.amazonaws.com',
-        'PORT': '5432',
-    }
-}
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.environ.get('DB_NAME'),
-#         'USER': os.environ.get('DB_USER'),
-#         'PASSWORD': os.environ.get('DB_PASS'),
-#         'HOST': os.environ.get('DB_HOST'),
-#         'PORT': '',
-#     }
-# }
-
 # Cache time to live in seconds.
 CACHE_TTL = 30
+CACHE_ENABLED = True
 
 CACHES = {
     "default": {
