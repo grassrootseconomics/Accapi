@@ -1,0 +1,6 @@
+cicdashboard/__pycache__
+cicdashboard/settings/__pycache__
+graphqlApi/__pycache__
+graphqlApi/api_charts/__pycache__
+graphqlApi/api_filters/__pycache__
+graphqlApi/migrations/__pycache__
