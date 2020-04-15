@@ -157,7 +157,7 @@ class Query(graphene.ObjectType):
 					ru_count = csum_response[month]
 					tr_count = traders_dict[month] if month in traders_dict.keys() else 0
 					fq_count = 0 if duration_type == '_day' else fq_dict[month] if month in fq_dict.keys() else 0
-					temp_dict.update({"yearMonth":month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
+					temp_dict.update({duration_name:month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
 					response.append(temp_dict)
 			
 			response = [time_summary(value=response)]
