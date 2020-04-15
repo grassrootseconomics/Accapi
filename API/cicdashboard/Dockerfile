@@ -18,7 +18,11 @@ RUN mkdir /code
 RUN mkdir /code/static
 
 WORKDIR /code
-
+RUN echo $env
+RUN echo $DB_NAME
+RUN echo $DB_USER
+RUN echo $DB_HOST
+RUN echo $DB_PASS
 RUN pip install uwsgi
 RUN pip install web3
 
