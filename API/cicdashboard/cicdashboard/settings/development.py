@@ -21,8 +21,8 @@ DATABASES = {
 }
 
 # Cache time to live in seconds.
-CACHE_TTL = 30
-CACHE_ENABLED = False
+CACHE_TTL = 60
+CACHE_ENABLED = True
 
 CACHES = {
     "default": {
