@@ -126,23 +126,29 @@ class Query(graphene.ObjectType):
 			
 
 			if request == 'registeredusers-cumulative':
-				data = cic_users.objects.all()
+				print("registered-cumulative count")
+				print(start_period_first, start_period_last)
+				print(end_period_first, end_period_last)
+
+				data = cic_users.objects.values('current_blockchain_address', 'created','gender')
 				value = Coalesce(Count("current_blockchain_address", distinct=True),0)
 
-				regusers_initial_period = data.filter(created__lt = start_period_last, gender__in = gender_filter).aggregate(value = Count('current_blockchain_address'))['value']
+				regusers_initial_period = data.filter(created__lt = start_period_first, gender__in = gender_filter).aggregate(value = Count('current_blockchain_address'))['value']
+				print(regusers_initial_period)
 				
 				if duration_type == '_day':
 					total = data.annotate(_day =TruncDay('created'))\
-					.filter(created__gte = start_period_last, created__lt = end_period_last)\
+					.filter(created__gte = start_period_first, created__lt = end_period_last, gender__in = gender_filter)\
 					.values(duration_type).annotate(value = value).order_by(duration_type)
 				else:
 					total = data.annotate(_month=TruncMonth('created'))\
-					.filter(created__gte = start_period_last, created__lt = end_period_last)\
+					.filter(created__gte = start_period_first, created__lt = end_period_last, gender__in = gender_filter)\
 					.values(duration_type).annotate(value = value).order_by(duration_type)
 
 				initial_response = []
 				populate_response = [initial_response.append({duration_name:period[duration_type].strftime(duration_format), "value":period['value']}) for period in total]
 				fill_out_response = fill_missing_categories(initial_response, duration_name, start_period_first, end_period_last, ['value'])
+
 				csum_response = {}
 				
 				cumsum = regusers_initial_period
@@ -156,7 +162,7 @@ class Query(graphene.ObjectType):
 					ru_count = csum_response[month]
 					tr_count = traders_dict[month] if month in traders_dict.keys() else 0
 					fq_count = 0 if duration_type == '_day' else fq_dict[month] if month in fq_dict.keys() else 0
-					temp_dict.update({"yearMonth":month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
+					temp_dict.update({duration_name:month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
 					response.append(temp_dict)
 			
 			response = [time_summary(value=response)]

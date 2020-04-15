@@ -36,12 +36,7 @@ class Query(graphene.ObjectType):
 		# get variable passed through query from front-end
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
-		
-		# setting the filters
-		gender_filter = gender_list if len(gender) == 0 else gender
-		tx_type_filter = transfer_subtypes if len(tx_type) == 0 else tx_type
-		spend_filter = spend_type_list if len(spend_type) == 0 else spend_type
-		token_name_filter = token_list if len(token_name) == 0 else token_name
+		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
 
 		reporting_data = reporting_table.objects
 		summary_data = reporting_data.annotate(_month=TruncMonth('timestamp'))\
@@ -54,13 +49,15 @@ class Query(graphene.ObjectType):
 			transfer_subtype__in = tx_type_filter
 			).order_by("_month")
 
-		# print(start_period_first, start_period_last)
-		# print(end_period_first, end_period_last)
+		all_users = cic_users.objects.values('current_blockchain_address', 'created', 'gender') # get data for registered and new registered users tile
+
+		print(start_period_first, start_period_last)
+		print(end_period_first, end_period_last)
 
 		request = request.lower()
 
 		if request == 'registeredusers':
-			all_users = cic_users.objects.all()
+			
 
 			registered_user_data_from_date = all_users.filter(created__lt = start_period_last, gender__in = gender_filter).aggregate(value = Count('current_blockchain_address'))['value']
 			registered_user_data_to_date = all_users.filter(created__lt = end_period_last, gender__in = gender_filter).aggregate(value = Count('current_blockchain_address'))['value']
@@ -71,24 +68,26 @@ class Query(graphene.ObjectType):
 				)]
 
 		if request == 'newregisteredusers':
-			data = cic_users.objects.all()
 			value = Coalesce(Count("current_blockchain_address", distinct=True),0)
-			total = data.filter(created__gte = start_period_first, created__lt = end_period_last).aggregate(value = value)['value']
-			start = data.filter(created__gte = start_period_first, created__lt = start_period_last).aggregate(value = value)['value']
-			end = data.filter(created__gte = end_period_first, created__lt = end_period_last).aggregate(value = value)['value']
+			total = all_users.filter(created__gte = start_period_first, created__lt = end_period_last, gender__in = gender_filter).aggregate(value = value)['value']
+			start = all_users.filter(created__gte = start_period_first, created__lt = start_period_last, gender__in = gender_filter).aggregate(value = value)['value']
+			end = all_users.filter(created__gte = end_period_first, created__lt = end_period_last, gender__in = gender_filter).aggregate(value = value)['value']
 			response = [summary_tiles(total = total,start = start,end = end)]
 
 		if request == 'traders':
 			value = Coalesce(Count("source", distinct=True),0)
-			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
+			data = summary_data.values('timestamp','source')
+			response = get_common_summary_response_data(summary_tiles,data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'tradevolumes':
 			value = Coalesce(Sum("weight"),0)
-			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
+			data = summary_data.values('timestamp','weight')
+			response = get_common_summary_response_data(summary_tiles,data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'transactioncount':
 			value = Coalesce(Count("id"),0)
-			response = get_common_summary_response_data(summary_tiles,summary_data, value, start_period_first, start_period_last, end_period_first, end_period_last)
+			data = summary_data.values('timestamp','id')
+			response = get_common_summary_response_data(summary_tiles,data, value, start_period_first, start_period_last, end_period_first, end_period_last)
 
 		if request == 'frequenttraders':
 			# get number of months selected, used in frequent trader calculation
@@ -129,13 +128,9 @@ class Query(graphene.ObjectType):
 
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
+		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
 
-		gender_filter = gender_list if len(gender) == 0 else gender
-		tx_type_filter = transfer_subtypes if len(tx_type) == 0 else tx_type
-		spend_filter = spend_type_list if len(spend_type) == 0 else spend_type
-		token_name_filter = token_list if len(token_name) == 0 else token_name
-
-		reporting_data = reporting_table.objects.all()
+		reporting_data = reporting_table.objects.values('id','timestamp','weight')
 		summary_data = reporting_data.annotate(_month=TruncMonth('timestamp'))\
 		.filter(
 			timestamp__gte = start_period_first,
@@ -190,7 +185,7 @@ class Query(graphene.ObjectType):
 		gender = kwargs['gender']
 		gender_filter = gender_list if len(gender) == 0 else gender
 
-		all_users = cic_users.objects.filter(gender__in = gender_filter)
+		all_users = cic_users.objects.values("current_blockchain_address",'gender','bal').filter(gender__in = gender_filter)
 		total_balance = all_users.aggregate(value = Sum('bal'))['value']
 		circulation = all_users.exclude(roles__has_key ='ADMIN').aggregate(value = Sum('bal'))['value']
 		supply = int(cic_supply)/10**18
