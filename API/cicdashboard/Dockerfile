@@ -15,6 +15,7 @@ ENV DB_USER ${DB_USER}
 ENV DB_HOST ${DB_HOST}
 ENV DB_PASS ${DB_PASS}
 
+RUN echo ENVIRONMENT
 RUN mkdir /code
 RUN mkdir /code/static
 
