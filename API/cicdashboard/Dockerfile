@@ -1,6 +1,6 @@
 FROM python:3.7.6
 ENV PYTHONUNBUFFERED 1
-ENV ENVIRONMENT $env
+ENV ENVIRONMENT PROD
 
 ENV SECRET_KEY 1$qpv*d%uox8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t
 
@@ -18,11 +18,6 @@ RUN mkdir /code
 RUN mkdir /code/static
 
 WORKDIR /code
-RUN echo $env
-RUN echo $DB_NAME
-RUN echo $DB_USER
-RUN echo $DB_HOST
-RUN echo $DB_PASS
 RUN pip install uwsgi
 RUN pip install web3
 
