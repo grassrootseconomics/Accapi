@@ -1,7 +1,7 @@
 FROM python:3.7.6
 ENV PYTHONUNBUFFERED 1
-ARG env 
-ENV ENVIRONMENT ${env}
+ARG ENVIRONMENT 
+ENV ENVIRONMENT ${ENVIRONMENT}
 
 ENV SECRET_KEY 1$qpv*d%uox8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t
 
@@ -15,7 +15,7 @@ ENV DB_USER ${DB_USER}
 ENV DB_HOST ${DB_HOST}
 ENV DB_PASS ${DB_PASS}
 
-RUN echo ENVIRONMENT
+RUN echo $ENVIRONMENT
 RUN mkdir /code
 RUN mkdir /code/static
 
