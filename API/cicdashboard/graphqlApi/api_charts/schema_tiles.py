@@ -51,8 +51,8 @@ class Query(graphene.ObjectType):
 
 		all_users = cic_users.objects.values('current_blockchain_address', 'created', 'gender') # get data for registered and new registered users tile
 
-		# print(start_period_first, start_period_last)
-		# print(end_period_first, end_period_last)
+		print(start_period_first, start_period_last)
+		print(end_period_first, end_period_last)
 
 		request = request.lower()
 

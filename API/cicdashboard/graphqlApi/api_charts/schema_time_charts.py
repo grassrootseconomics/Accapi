@@ -126,11 +126,16 @@ class Query(graphene.ObjectType):
 			
 
 			if request == 'registeredusers-cumulative':
+				print("registered-cumulative count")
+				print(start_period_first, start_period_last)
+				print(end_period_first, end_period_last)
+
 				data = cic_users.objects.values('current_blockchain_address', 'created','gender')
 				value = Coalesce(Count("current_blockchain_address", distinct=True),0)
 
 				regusers_initial_period = data.filter(created__lt = start_period_first, gender__in = gender_filter).aggregate(value = Count('current_blockchain_address'))['value']
-
+				print(regusers_initial_period)
+				
 				if duration_type == '_day':
 					total = data.annotate(_day =TruncDay('created'))\
 					.filter(created__gte = start_period_first, created__lt = end_period_last, gender__in = gender_filter)\
