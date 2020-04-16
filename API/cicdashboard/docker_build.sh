@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "Secret ID: $secret_id"
 export DB_USER=`aws secretsmanager get-secret-value --secret-id $secret_id | jq --raw-output .SecretString | jq -r ."username"`
 export DB_PASS=`aws secretsmanager get-secret-value --secret-id $secret_id | jq --raw-output .SecretString | jq -r ."password"`
 export DB_HOST=`aws secretsmanager get-secret-value --secret-id $secret_id | jq --raw-output .SecretString | jq -r ."host"`
