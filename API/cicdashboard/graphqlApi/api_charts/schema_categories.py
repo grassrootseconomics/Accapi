@@ -78,7 +78,7 @@ class Query(graphene.ObjectType):
 			if response is not None:
 				return(response)
 
-		from_date, to_date, token_name, business_type, gender = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['business_type'], kwargs['gender']
+		from_date, to_date, token_name, spend_type, gender = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['business_type'], kwargs['gender']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
 		gender_filter, spend_filter, token_name_filter, _ = create_filter_items(gender, spend_type, token_name, [])
 
