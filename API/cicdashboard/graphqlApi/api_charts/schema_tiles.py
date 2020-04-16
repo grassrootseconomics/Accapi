@@ -188,10 +188,11 @@ class Query(graphene.ObjectType):
 		all_users = cic_users.objects.values("current_blockchain_address",'gender','bal').filter(gender__in = gender_filter)
 		total_balance = all_users.aggregate(value = Sum('bal'))['value']
 		circulation = all_users.exclude(roles__has_key ='ADMIN').aggregate(value = Sum('bal'))['value']
-		supply = int(cic_supply)/10**18
-		reserve = int(converter_reserve_balance)/10**18
-		price = cic_price
-		balance = [{"total":total_balance, "circulation":circulation, "supply":supply, "reserve":reserve, "price":price}]
+		# supply = int(cic_supply)/10**18
+		# reserve = int(converter_reserve_balance)/10**18
+		# price = cic_price
+		# balance = [{"total":total_balance, "circulation":circulation, "supply":supply, "reserve":reserve, "price":price}]
+		balance = [{"total":total_balance, "circulation":circulation}]
 		response = [time_summary(value=balance)]
 
 		if CACHE_ENABLED:
