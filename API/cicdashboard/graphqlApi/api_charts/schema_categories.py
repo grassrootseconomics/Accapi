@@ -50,7 +50,17 @@ class Query(graphene.ObjectType):
 
 		if request == 'tradevolumes-category-spendtype':
 			data =summary_data.annotate(label = F('t_business_type')).values("label").annotate(value=Sum("weight"))
-			response = [category_summary(label=i['label'], value =i['value']) for i in data]
+			
+			result = []
+			for stype in spend_filter:
+				temp_dict = {}
+				x = [{'label':e['label'], 'value':e['value']} for e in data if e['label'] == stype]
+				if len(x) > 0:
+					result.append(x[0])
+				else:
+					result.append({'label':stype, 'value':0})
+
+			response = [category_summary(label=i['label'], value =i['value']) for i in result]
 
 		if request == 'tradevolumes-category-gender':
 			data =summary_data.annotate(label = F('s_gender')).values("label").annotate(value=Sum("weight"))
