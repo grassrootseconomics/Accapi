@@ -65,7 +65,7 @@ class Query(graphene.ObjectType):
 		from_date = graphene.String(required=True), 
 		to_date = graphene.String(required=True),
 		token_name = graphene.List(graphene.String,required=True),
-		business_type = graphene.List(graphene.String,required=True),
+		business_type = graphene.List(graphene.String,required=True), # this is spend_type i.e. the targets business type
 		gender = graphene.List(graphene.String,required=True))
 
 	def resolve_summaryDataTopTraders(self, info, **kwargs):
@@ -78,9 +78,9 @@ class Query(graphene.ObjectType):
 			if response is not None:
 				return(response)
 
-		from_date, to_date, token_name, business_type, gender = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['business_type'], kwargs['gender']
+		from_date, to_date, token_name, spend_type, gender = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['business_type'], kwargs['gender']
 		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
-		gender_filter, business_filter, token_name_filter, _ = create_filter_items(gender, business_type, token_name, [])
+		gender_filter, spend_filter, token_name_filter, _ = create_filter_items(gender, spend_type, token_name, [])
 
 		reporting_data = reporting_table.objects.all()
 		summary_data = reporting_data.annotate(_month=TruncMonth('timestamp'))\
@@ -88,7 +88,7 @@ class Query(graphene.ObjectType):
 			timestamp__gte = start_period_first,
 			timestamp__lt = end_period_last, 
 			tokenname__in = token_name_filter, 
-			s_business_type__in = business_filter, 
+			t_business_type__in = spend_filter, 
 			s_gender__in = gender_filter,
 			transfer_subtype = 'STANDARD'
 			).order_by("_month")
