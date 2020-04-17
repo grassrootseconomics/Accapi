@@ -1,4 +1,5 @@
 from cicdashboard.settings.common import *
+import requests
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '1$qpv*d%uoex8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t'
@@ -11,6 +12,12 @@ ALLOWED_HOSTS = [
 'b51ycagx5g.execute-api.eu-central-1.amazonaws.com',
 'testtg-929153678.eu-central-1.elb.amazonaws.com'
 ]
+
+METADATA_URI = os.environ['ECS_CONTAINER_METADATA_URI']
+print("Meta data info",METADATA_URI)
+container_metadata = requests.get(METADATA_URI).json()
+ALLOWED_HOSTS.append(container_metadata['Networks'][0]['IPv4Addresses'][0])
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
