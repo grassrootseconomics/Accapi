@@ -3,7 +3,16 @@ from cicdashboard.settings.common import *
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = False
-ALLOWED_HOSTS =['*']
+
+ALLOWED_HOSTS = [
+'https://dashboard.sarafu.network', 
+'dashboard.sarafu.network',
+'http://cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
+'cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
+'iqr3ivy96j.execute-api.eu-central-1.amazonaws.com',
+'cic-production-alb-62265053.eu-central-1.elb.amazonaws.com'
+]
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
