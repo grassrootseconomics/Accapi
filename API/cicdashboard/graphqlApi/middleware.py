@@ -15,8 +15,11 @@ class HealthEndpointMiddleware(object):
         # One-time configuration and initialization.
 
     def __call__(self, request):
-    	
+
         response = self.get_response(request)
         if request.META["PATH_INFO"] == "/health_check":
         	print(request.META["PATH_INFO"] )
         	return HttpResponse("OK")
+
+        else:
+        	return response
