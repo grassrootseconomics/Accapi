@@ -4,9 +4,10 @@ from cicdashboard.settings.common import *
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = False
 ALLOWED_HOSTS = [
-'cic-dashboard-frontend-webpage.s3-website.eu-central-1.amazonaws.com',
-'b51ycagx5g.execute-api.eu-central-1.amazonaws.com',
-'testtg-929153678.eu-central-1.elb.amazonaws.com'
+'dashboard.sarafu.network',
+'cic-dashboard-frontend-webpage-prod.s3-website.eu-central-1.amazonaws.com',
+'iqr3ivy96j.execute-api.eu-central-1.amazonaws.com',
+'cic-production-alb-62265053.eu-central-1.elb.amazonaws.com'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 

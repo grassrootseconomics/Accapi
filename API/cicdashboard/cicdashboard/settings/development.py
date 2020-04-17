@@ -6,7 +6,11 @@ SECRET_KEY = '1$qpv*d%uoex8xe!as6r0#3s@kz1)e&tpb5a@@@)y#dr(5_**t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+'cic-dashboard-frontend-webpage.s3-website.eu-central-1.amazonaws.com',
+'b51ycagx5g.execute-api.eu-central-1.amazonaws.com',
+'testtg-929153678.eu-central-1.elb.amazonaws.com'
+]
 CORS_ORIGIN_ALLOW_ALL = True
 
 DATABASES = {
