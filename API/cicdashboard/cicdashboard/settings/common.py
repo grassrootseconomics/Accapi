@@ -41,6 +41,7 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'graphqlApi.middleware.HealthEndpointMiddleware',
 ]
 
 ROOT_URLCONF = 'cicdashboard.urls'
