@@ -9,7 +9,14 @@ ALLOWED_HOSTS = [
 'iqr3ivy96j.execute-api.eu-central-1.amazonaws.com',
 'cic-production-alb-62265053.eu-central-1.elb.amazonaws.com'
 ]
-CORS_ORIGIN_ALLOW_ALL = True
+
+
+CORS_ORIGIN_WHITELIST = [
+'https://dashboard.sarafu.network',
+'https://cic-dashboard-frontend-webpage-prod.s3.eu-central-1.amazonaws.com',
+'https://iqr3ivy96j.execute-api.eu-central-1.amazonaws.com',
+'cic-production-alb-62265053.eu-central-1.elb.amazonaws.com'
+]
 
 DATABASES = {
     'default': {
