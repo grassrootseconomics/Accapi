@@ -36,8 +36,8 @@ class Query(graphene.ObjectType):
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
 
 		# get relevant start and end points for date selection
-		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
-		# print(start_period_first, start_period_last, end_period_first, end_period_last)
+		start_period_first, start_period_last, end_period_first, end_period_last, flag = create_date_range(from_date, to_date)
+		print(start_period_first, start_period_last, end_period_first, end_period_last, flag)
 
 		# check if filters have been passed through, if not use all values
 		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
@@ -45,7 +45,9 @@ class Query(graphene.ObjectType):
 		# request type for specific chart
 		request = request.lower()
 
-		if from_date == to_date: # daily selection
+		#if from_date == to_date: # daily selection
+		if flag == 'd':
+			print("daily view selecetd")
 			summary_data = reporting_table.objects.annotate(_day =TruncDay('timestamp'))\
 			.filter(timestamp__gte = start_period_first, timestamp__lt = end_period_last, tokenname__in = token_name_filter, t_business_type__in = spend_filter, s_gender__in = gender_filter,transfer_subtype__in = tx_type_filter)\
 			.order_by("_day")
@@ -55,6 +57,7 @@ class Query(graphene.ObjectType):
 			duration_name = 'dayMonth'
 
 		else: # monthly selection
+			print("monthly view selecetd")
 			summary_data = reporting_table.objects.annotate(_month=TruncMonth('timestamp'))\
 			.filter(timestamp__gte = start_period_first, timestamp__lt = end_period_last, tokenname__in = token_name_filter, t_business_type__in = spend_filter, s_gender__in = gender_filter,transfer_subtype__in = tx_type_filter)\
 			.order_by("_month")
@@ -162,7 +165,8 @@ class Query(graphene.ObjectType):
 					ru_count = csum_response[month]
 					tr_count = traders_dict[month] if month in traders_dict.keys() else 0
 					fq_count = 0 if duration_type == '_day' else fq_dict[month] if month in fq_dict.keys() else 0
-					temp_dict.update({duration_name:month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
+					#temp_dict.update({duration_name:month,'Registered':ru_count,"Total":tr_count, "Frequent":fq_count})
+					temp_dict.update({duration_name:month,'Registered':ru_count})
 					response.append(temp_dict)
 			
 			response = [time_summary(value=response)]
