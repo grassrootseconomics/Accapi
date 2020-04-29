@@ -122,7 +122,7 @@ class Query(graphene.ObjectType):
 				for m in list(traders_dict.keys()):
 					au_day_dict = {}
 					tr_count = traders_dict[m]
-					au_day_dict.update({"dayMonth":m,"Total":tr_count, "Frequent":0})
+					au_day_dict.update({"dayMonth":m,"Total":tr_count})
 					response.append(au_day_dict)
 
 				response = fill_missing_categories(response, "dayMonth",start_period_first,end_period_last, ['Total', 'Frequent'])
