@@ -16,7 +16,7 @@ ALLOWED_HOSTS = [
 CORS_ORIGIN_WHITELIST = [
 'http://cic-dashboard-frontend-webpage.s3-website.eu-central-1.amazonaws.com',
 'https://b51ycagx5g.execute-api.eu-central-1.amazonaws.com',
-'testtg-929153678.eu-central-1.elb.amazonaws.com'
+'http://testtg-929153678.eu-central-1.elb.amazonaws.com'
 ]
 
 DATABASES = {

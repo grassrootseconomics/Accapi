@@ -35,7 +35,7 @@ class Query(graphene.ObjectType):
 
 		# get variable passed through query from front-end
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
-		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
+		start_period_first, start_period_last, end_period_first, end_period_last, _ = create_date_range(from_date, to_date)
 		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
 
 		reporting_data = reporting_table.objects
@@ -127,7 +127,7 @@ class Query(graphene.ObjectType):
 				return(response)
 
 		from_date, to_date, token_name, spend_type, gender, tx_type, request = kwargs['from_date'], kwargs['to_date'], kwargs['token_name'], kwargs['spend_type'], kwargs['gender'], kwargs['tx_type'], kwargs['request']
-		start_period_first, start_period_last, end_period_first, end_period_last = create_date_range(from_date, to_date)
+		start_period_first, start_period_last, end_period_first, end_period_last, _ = create_date_range(from_date, to_date)
 		gender_filter, spend_filter, token_name_filter, tx_type_filter = create_filter_items(gender, spend_type, token_name, tx_type)
 
 		reporting_data = reporting_table.objects.values('id','timestamp','weight')
