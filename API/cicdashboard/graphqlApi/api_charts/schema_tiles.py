@@ -190,7 +190,7 @@ class Query(graphene.ObjectType):
 		circulation = all_users.exclude(roles__has_key ='ADMIN').aggregate(value = Sum('bal'))['value']
 		supply = int(cic_supply)/10**18
 		reserve = int(converter_reserve_balance)/10**18
-		price = cic_price
+		price = float(":.2f".format(cic_price))
 		balance = [{"total":total_balance, "circulation":circulation, "supply":supply, "reserve":reserve, "price":price}]
 		response = [time_summary(value=balance)]
 
