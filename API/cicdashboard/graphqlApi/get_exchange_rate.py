@@ -1587,6 +1587,6 @@ def get_price(converter_address):
 
     cic_price = converter_reserve_balance/(cic_supply * reserve_ratio_ppm / 1e6)
 
-    return (cic_supply, converter_reserve_balance, cic_price)
+    return (cic_supply, converter_reserve_balance, float("{:.2f}".format(cic_price)))
 
 cic_supply, converter_reserve_balance, cic_price = get_price(CONVERTOR_ADDRESS)
