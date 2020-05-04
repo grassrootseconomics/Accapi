@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 from web3 import (
     Web3,
     HTTPProvider
@@ -1586,7 +1587,8 @@ def get_price(converter_address):
     cic_supply = cic_contract.functions.totalSupply().call()
 
     cic_price = converter_reserve_balance/(cic_supply * reserve_ratio_ppm / 1e6)
+    cic_price = "{:.2f}".format(cic_price)
 
-    return (cic_supply, converter_reserve_balance, float("{:.2f}".format(cic_price)))
+    return (cic_supply, converter_reserve_balance, cic_price)
 
 cic_supply, converter_reserve_balance, cic_price = get_price(CONVERTOR_ADDRESS)
