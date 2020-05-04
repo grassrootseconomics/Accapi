@@ -66,7 +66,7 @@ def create_date_range(from_date, to_date):
 	no_days = end_period_last - start_period_first
 	no_days = no_days.days
 
-	if no_days <= 61: # daily view filter (set to two months), need to change to 62 on front end
+	if no_days <= 62: # daily view filter (set to two months)
 		start_period_first = _from_date
 		start_period_last = _from_date + timedelta(1)
 
