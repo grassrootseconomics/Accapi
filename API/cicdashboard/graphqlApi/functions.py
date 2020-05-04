@@ -63,24 +63,26 @@ def create_date_range(from_date, to_date):
 	end_period_last = end_period_first + timedelta(calendar.monthrange(end_period_first.year, end_period_first.month)[1])
 
 	# get the numbrer of days
-	no_days = end_period_last - start_period_first
-	no_days = no_days.days
+	# no_days = end_period_last - start_period_first
+	# no_days = no_days.days
 
-	if no_days <= 61: # daily view filter (set to two months)
-		start_period_first = _from_date
-		start_period_last = _from_date + timedelta(1)
+	#if no_days <= 61: # daily view filter (set to two months)
+	if from_date == to_date:
+		# start_period_first = _from_date
+		# start_period_last = _from_date + timedelta(1)
 
 		today = date.today()
 		if today.year == _to_date.year and today.month == _to_date.month: # check if selection is current month selection
 			end_period_first = datetime.combine(today, datetime.min.time())
 			end_period_last = end_period_first + timedelta(1)
-			print("todya data")
-			print(today)
-			print(end_period_first)
-			print(end_period_last)
+			# print("today data")
+			# print(today, end_period_first, end_period_last)
 		else:
 			end_period_first = _to_date + timedelta(calendar.monthrange(_to_date.year, _to_date.month)[1] - 1)
 			end_period_last = end_period_first + timedelta(1)
+
+		start_period_first = end_period_last - timedelta(60)
+		start_period_last = start_period_first + timedelta(1)
 
 		flag = "d"	
 
@@ -90,37 +92,8 @@ def create_date_range(from_date, to_date):
 		start_period_last = start_period_first + timedelta(calendar.monthrange(start_period_first.year, start_period_first.month)[1])
 		end_period_last = end_period_first + timedelta(calendar.monthrange(end_period_first.year, end_period_first.month)[1])
 
-		flag = "m"		
-
-	# print("start date start", start_period_first)
-	# print("start date last", start_period_last)
-	# print("end date start", end_period_first)
-	# print("end date last", end_period_last)
-
-	# convert string into date information
-	# if from_date == to_date: # single month selection
-	# 	_from_date = datetime.strptime("{}-01".format(from_date), '%Y-%m-%d')
-	# 	start_period_first = _from_date
-	# 	start_period_last = _from_date + timedelta(1)
-
-	# 	today = date.today()
-	# 	if today.year == _from_date.year and today.month == _from_date.month: # check if selection is current month selection
-	# 		end_period_first = datetime.combine(today, datetime.min.time())
-	# 		end_period_last = end_period_first + timedelta(1)
-	# 	else:
-	# 		_to_date = datetime.strptime("{}-01".format(to_date), '%Y-%m-%d')
-	# 		end_period_first = _to_date + timedelta(calendar.monthrange(_to_date.year, _to_date.month)[1] - 1)
-	# 		end_period_last = end_period_first + timedelta(1)	
-
-	# else:
-	# 	_from_date = datetime.strptime("{}-01".format(from_date), '%Y-%m-%d')
-	# 	_to_date = datetime.strptime("{}-01".format(to_date), '%Y-%m-%d')
-
-	# 	start_period_first = _from_date
-	# 	end_period_first = _to_date
-	# 	start_period_last = start_period_first + timedelta(calendar.monthrange(start_period_first.year, start_period_first.month)[1])
-	# 	end_period_last = end_period_first + timedelta(calendar.monthrange(end_period_first.year, end_period_first.month)[1])
-
+		flag = "m"
+		
 	return (start_period_first, start_period_last, end_period_first, end_period_last, flag)
 
 """ CATEGORY BY FILTER
