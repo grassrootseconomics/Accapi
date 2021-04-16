@@ -4,7 +4,7 @@ atomicwrites==1.3.0
 colorama==0.4.3
 Django==3.0.3
 django-cors-headers==3.2.1
-django-debug-toolbar==2.2
+django-debug-toolbar==2.2.1
 django-filter==2.2.0
 django-health-check==3.12.1
 django-pivot==1.8.0
